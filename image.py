@@ -6,8 +6,8 @@ class FallHafez():
     BLACK = (0, 0, 0)
 
     def __init__(self, font:str) -> None:
-        self.font = ImageFont.truetype(f'src/font/{font}.ttf', 50)
-        self.title = ImageFont.truetype(f'src/font/{font}.ttf', 80)
+        self.font = ImageFont.truetype(f'src/font/{font}.ttf', 80)
+        self.title = ImageFont.truetype(f'src/font/{font}.ttf', 100)
 
 
     def get_text_size(self, text, font):
@@ -31,17 +31,22 @@ class FallHafez():
 
         title_text = self.get_title(file)
 
-        TEXT.text((int(length/2) - int(self.get_text_size(title_text, self.title)/2), 200), title_text, self.BLACK, font=self.title)
+        half_width, half_length = int(width/2), int(length/2)
 
-        TEXT.text((((length/2)), int(width/2)-200), arabic_reshaper.reshape(self.text[0]), self.BLACK, font=self.font)
-        TEXT.text((int((length/2) - self.get_text_size(self.text[1], self.font)), int(width/2)-100), arabic_reshaper.reshape(self.text[1]), self.BLACK, font=self.font)
+        # title
+        TEXT.text((half_length - int(self.get_text_size(title_text, self.title)/2), int(width/3)-100), title_text, self.BLACK, font=self.title)
 
-        TEXT.text((((length/2)), int(width/2)+50), arabic_reshaper.reshape(self.text[2]), self.BLACK, font=self.font)
-        TEXT.text((int((length/2) - self.get_text_size(self.text[3], self.font)), int(width/2)+150), arabic_reshaper.reshape(self.text[3]), self.BLACK, font=self.font)
 
-        image.save('image.jpg')
+        TEXT.text((half_length + 50, half_width-220), arabic_reshaper.reshape(self.text[0]), self.BLACK, font=self.font)
 
+        TEXT.text((half_length - self.get_text_size(self.text[1], self.font) - 50, half_width-70), arabic_reshaper.reshape(self.text[1]), self.BLACK, font=self.font)
+
+
+        TEXT.text((half_length + 50, half_width+80), arabic_reshaper.reshape(self.text[2]), self.BLACK, font=self.font)
+
+        TEXT.text((half_length - self.get_text_size(self.text[3], self.font) - 50, half_width+230), arabic_reshaper.reshape(self.text[3]), self.BLACK, font=self.font)
+
+
+        image.save('image.jpg', quality=80)
         return 'image.jpg'
     
-
-FallHafez('Vazirmatn').make_image('sh286')

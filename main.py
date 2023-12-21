@@ -4,15 +4,37 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from decouple import config
 from fall import show_fall
 from image import FallHafez
+from flask import Flask, request
 
 
 # logging info
 logging.basicConfig(filename='info.log', filemode='a', level=logging.INFO, format='%(asctime)s - %(filename)s - %(message)s') 
 
-TOKEN = config('TOKEN')
-bot = telebot.TeleBot(token=TOKEN)
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-bot.delete_webhook()
+
+TOKEN = config('TOKEN')
+bot = telebot.TeleBot(token=TOKEN, threaded=False)
+
+
+if not DEBUG:
+    secret = config('SECRET')
+    url = f'{config("URL")}/{secret}'
+
+
+    bot.remove_webhook()
+    bot.set_webhook(url=url)
+
+    app = Flask(__name__)
+
+    message_bool = False
+
+    @app.route(f'/{secret}', methods=['POST'])
+    def webhook():
+        update = telebot.types.Update.de_json(request.stream.read().decode('utf-8'))
+        bot.process_new_updates([update])
+        return 'ok', 200
+
 
 @bot.message_handler(commands=['start'])
 def start(msg):
@@ -31,7 +53,6 @@ def start(msg):
 
     bot.reply_to(msg, text, reply_markup=markup)
     
-
 
 def get_fallow_markup():
     markup = InlineKeyboardMarkup()
@@ -52,29 +73,6 @@ def callback_query(call):
 
     elif str(call.data).split('-')[0] == "get_pic":
         fall = str(call.data).split('-')[1]
-        text = """
-فونت مورد نظر خودتان را انتخاب کنید:
-        
-@this_hafez_bot
-@PhiloLearn
-"""
-        markup = InlineKeyboardMarkup()
-        markup.row_width = 2
-
-        tanha = InlineKeyboardButton("تنها", callback_data=f"tanha-{fall}")
-        parastoo = InlineKeyboardButton("پرستو", callback_data=f"parastoo-{fall}")
-        shabnam = InlineKeyboardButton("شبنم", callback_data=f"shabnam-{fall}")
-        vazirmatn = InlineKeyboardButton("وزیر", callback_data=f"vazirmatn-{fall}")
-        
-        markup.add(parastoo, tanha)
-        markup.add(vazirmatn, shabnam)
-
-        example = open('fonts.jpg', 'rb')
-        bot.send_photo(call.from_user.id, example, caption=text, reply_markup=markup)
-
-
-    elif str(call.data).split('-')[0] == "tanha":
-        fall = str(call.data).split('-')[1]
 
         tanha = FallHafez('Tanha').make_image(fall)
         pic = open(tanha, 'rb')
@@ -84,37 +82,5 @@ def callback_query(call):
         bot.send_photo(call.from_user.id, pic, caption=text, reply_markup=get_fallow_markup())
 
 
-    elif str(call.data).split('-')[0] == "parastoo":
-        fall = str(call.data).split('-')[1]
-
-        parastoo = FallHafez('Parastoo').make_image(fall)
-        pic = open(parastoo, 'rb')
-
-        text = '@this_hafez_bot\n@PhiloLearn'
-
-        bot.send_photo(call.from_user.id, pic, caption=text, reply_markup=get_fallow_markup())
-
-
-    elif str(call.data).split('-')[0] == "shabnam":
-        fall = str(call.data).split('-')[1]
-
-        shabnam = FallHafez('Shabnam').make_image(fall)
-        pic = open(shabnam, 'rb')
-
-        text = '@this_hafez_bot\n@PhiloLearn'
-
-        bot.send_photo(call.from_user.id, pic, caption=text, reply_markup=get_fallow_markup())
-
-
-    elif str(call.data).split('-')[0] == "vazirmatn":
-        fall = str(call.data).split('-')[1]
-
-        vazirmatn = FallHafez('Vazirmatn').make_image(fall)
-        pic = open(vazirmatn, 'rb')
-
-        text = '@this_hafez_bot\n@PhiloLearn'
-
-        bot.send_photo(call.from_user.id, pic, caption=text, reply_markup=get_fallow_markup())
-
-
-bot.infinity_polling()
+if DEBUG:
+    bot.infinity_polling()
