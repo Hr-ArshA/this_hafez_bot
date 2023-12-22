@@ -1,9 +1,10 @@
 import telebot
 import logging
+import re
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from decouple import config
-from fall import show_fall
-from image import FallHafez
+from fall import show_poem, get_divination
+from image import make_image
 from flask import Flask, request
 
 
@@ -43,6 +44,7 @@ def start(msg):
     text = """
 سلام
 برای اینکه فال خود را بگیرید دکمه ی زیر را لمس کنید.
+و اگر غزل خاصی مد نظرتان است، شماره ی آن را تایپ کنید
 
 @this_hafez_bot
 @PhiloLearn
@@ -64,22 +66,45 @@ def get_fallow_markup():
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     if call.data == "get_fall":
-        fall = show_fall()
+        omen = get_divination()
+        text_of_divination = show_poem(omen)
         markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("تصویر فالم رو بده!", callback_data=f"get_pic-{fall[1]}"))
+        markup.add(InlineKeyboardButton("تصویر فالم رو بده!", callback_data=f"get_pic-{omen}"))
 
-        bot.send_message(call.from_user.id, fall[0], reply_markup=markup)
+        bot.send_message(call.from_user.id, text_of_divination, reply_markup=markup)
 
 
     elif str(call.data).split('-')[0] == "get_pic":
-        fall = str(call.data).split('-')[1]
+        file_name = str(call.data).split('-')[1]
 
-        tanha = FallHafez('Tanha').make_image(fall)
-        pic = open(tanha, 'rb')
+        poem = make_image(file_name)
+        pic = open(poem, 'rb')
 
         text = '@this_hafez_bot\n@PhiloLearn'
 
         bot.send_photo(call.from_user.id, pic, caption=text, reply_markup=get_fallow_markup())
+
+
+@bot.message_handler(content_types=['text'])
+def get_poem(msg):
+    poem = re.findall(r"\d+", str(msg.text))
+
+    if poem != []:
+        poem = int(poem[0])
+
+        if poem in range(1, 496):
+            text_of_poem = show_poem(f"sh{poem}")
+
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("تصویر بده!", callback_data=f"get_pic-sh{poem}"))
+
+            bot.send_message(msg.chat.id, text_of_poem, reply_markup=markup)
+        
+        else:
+            bot.send_message(msg.chat.id, 'این غزل وجود ندارد!')
+
+    else:
+        bot.send_message(msg.chat.id, 'لطفا یک عدد معتبر از ۱ تا ۴۹۵ وارد کنید...')
 
 
 if DEBUG:
