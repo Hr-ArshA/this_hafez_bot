@@ -36,6 +36,3 @@ def make_image(file):
 
     image.save('image.jpg', quality=80)
     return 'image.jpg'
-
-
-make_image('sh286')
