@@ -9,6 +9,7 @@ __pycache__/
 *$py.class
 ez.py
 hafez.zip
+list.csv
 
 # C extensions
 *.so
