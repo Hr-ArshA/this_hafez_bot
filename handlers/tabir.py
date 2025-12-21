@@ -14,7 +14,7 @@ def handle_tabir(bot, call):
 
     text = (
         f"* - غزل {to_persian_digits(omen)} *\n"
-        f"{poem[2].replace('---', '')}"
+        f"{poem[2].replace('---', '').replace('#', '')}"
         '\n🍉🍉 @this\\_hafez\\_bot 🍉🍉' if is_yalda() else '\n@this\\_hafez\\_bot'
     )
 

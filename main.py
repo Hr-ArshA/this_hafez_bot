@@ -10,6 +10,7 @@ from bot import bot
 from keyboards import fal_keyboard, philolearn_button
 from utils.text import to_persian_digits, get_caption
 from utils.time import is_yalda
+from telebot import types
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from telebot.formatting import format_text, hcite
 from handlers import register_handlers
@@ -66,18 +67,18 @@ def start(message):
 
 
 @bot.message_handler(commands=['fall'])
-def handle_fall_command(bot, message):
+def handle_fall_command(message):
     """
     Handle /fall command.
     """
     result = generate_fall()
 
     if not result:
-        bot.send_message(message.chat.id, "خطا در دریافت فال")
+        bot.send_message(message.from_user.id, "خطا در دریافت فال")
         return
 
     bot.send_message(
-        message.chat.id,
+        message.from_user.id,
         result["text"],
         parse_mode="HTML",
         reply_markup=fal_keyboard(result["omen"], True)
@@ -98,12 +99,12 @@ def send_this_poem(message):
     caption = get_caption()
 
     # Extract number from message text
-    poem_num = re.search(r"\d+", message.text)
-    if not poem_num:
-        bot.send_message(message.chat.id, 'این غزل وجود ندارد!')
-    
+    poem_num = re.findall(r"\d+", message.text)
+    if poem_num != []:
+        
+            
     else:
-        poem_num = int(poem_num.group())
+        poem_num = poem_num[0]
 
         # Check if poem number is in valid range
         if poem_num in range(1, 496):
@@ -122,6 +123,40 @@ def send_this_poem(message):
         else:
             bot.send_message(message.chat.id, 'لطفا یک عدد معتبر از ۱ تا ۴۹۵ وارد کنید...')
 
+
+# @bot.inline_handler(lambda query: query.query == 'text')
+# def query_text(inline_query):
+#     try:
+#         r = types.InlineQueryResultArticle('1', 'Result1', types.InputTextMessageContent('hi'))
+#         r2 = types.InlineQueryResultArticle('2', 'Result2', types.InputTextMessageContent('hi'))
+#         bot.answer_inline_query(inline_query.id, [r, r2])
+#     except Exception as e:
+#         print(e)
+
+@bot.inline_handler(lambda query: len(query.query) > 0)
+def query_text(inline_query):
+    try:
+
+        result = generate_fall()
+        text = f"<b> ❤️❤️ فال برای {inline_query.query} ❤️❤️</b>\n\n" + result["text"]
+
+        r = types.InlineQueryResultArticle(
+            '1', 
+            title=f"فال {inline_query.query}",   
+            description=f"یه فال برای {inline_query.query} بگیر...",
+            input_message_content=types.InputTextMessageContent(
+                message_text=text,
+                parse_mode="HTML"
+            ), 
+            reply_markup=fal_keyboard(result["omen"], True)
+            
+        )
+
+        result.clear()
+        bot.answer_inline_query(inline_query.id, [r,])
+
+    except Exception as e:
+        print(e)
 
 
 # Start the bot with infinite polling
