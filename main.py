@@ -101,8 +101,8 @@ def send_this_poem(message):
     # Extract number from message text
     poem_num = re.findall(r"\d+", message.text)
     if poem_num != []:
-        
-            
+        bot.send_message(message.chat.id, 'این غزل وجود ندارد!')
+    
     else:
         poem_num = poem_num[0]
 
@@ -124,14 +124,6 @@ def send_this_poem(message):
             bot.send_message(message.chat.id, 'لطفا یک عدد معتبر از ۱ تا ۴۹۵ وارد کنید...')
 
 
-# @bot.inline_handler(lambda query: query.query == 'text')
-# def query_text(inline_query):
-#     try:
-#         r = types.InlineQueryResultArticle('1', 'Result1', types.InputTextMessageContent('hi'))
-#         r2 = types.InlineQueryResultArticle('2', 'Result2', types.InputTextMessageContent('hi'))
-#         bot.answer_inline_query(inline_query.id, [r, r2])
-#     except Exception as e:
-#         print(e)
 
 @bot.inline_handler(lambda query: len(query.query) > 0)
 def query_text(inline_query):
