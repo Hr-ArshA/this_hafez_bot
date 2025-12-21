@@ -66,7 +66,7 @@ def start(message):
 
 
 @bot.message_handler(commands=['fall'])
-def handle_fall_command(bot, message):
+def handle_fall_command(message):
     """
     Handle /fall command.
     """
