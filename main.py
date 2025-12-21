@@ -104,7 +104,7 @@ def send_this_poem(message):
         bot.send_message(message.chat.id, 'این غزل وجود ندارد!')
     
     else:
-        poem_num = poem_num[0]
+        poem_num = int(poem_num[0])
 
         # Check if poem number is in valid range
         if poem_num in range(1, 496):
