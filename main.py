@@ -100,7 +100,7 @@ def send_this_poem(message):
 
     # Extract number from message text
     poem_num = re.findall(r"\d+", message.text)
-    if poem_num != []:
+    if poem_num == []:
         bot.send_message(message.chat.id, 'این غزل وجود ندارد!')
     
     else:
